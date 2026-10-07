@@ -1,0 +1,3 @@
+#!/bin/sh
+# Ignore ambient tokens; use the dedicated lab context.
+exec env -u HCLOUD_TOKEN hcloud --config "$HOME/.config/hcloud/lab.toml" --context lab "$@"

@@ -1,0 +1,3 @@
+ssh_key_name = "my-lab-key"
+# Optional: restrict public SSH to your own addresses.
+# ssh_source_cidrs = ["203.0.113.10/32"]

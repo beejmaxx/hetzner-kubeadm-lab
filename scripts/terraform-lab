@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""Run Terraform with the dedicated lab credential, ignoring ambient credentials."""
+import os
+from pathlib import Path
+import shutil
+import sys
+import tomllib
+
+root = Path(__file__).resolve().parents[1]
+credential = Path.home() / ".config/hcloud/lab.toml"
+try:
+    contexts = tomllib.loads(credential.read_text())["contexts"]
+    token = next(c["token"] for c in contexts if c["name"] == "lab")
+    if not token:
+        raise ValueError("empty credential")
+except (OSError, KeyError, ValueError, StopIteration):
+    sys.exit("Cannot read the saved lab context in ~/.config/hcloud/lab.toml")
+env = dict(os.environ)
+# Prevent unrelated shell Terraform defaults from changing backend or commands.
+for key in list(env):
+    if key.startswith(("TF_CLI_ARGS", "TF_VAR_")) or key in ("TF_WORKSPACE", "TF_DATA_DIR", "TF_LOG", "TF_LOG_PATH"):
+        del env[key]
+env["HCLOUD_TOKEN"] = token
+os.umask(0o077)
+binary = shutil.which("terraform")
+if not binary:
+    sys.exit("Install Terraform first: https://developer.hashicorp.com/terraform/install")
+os.execve(binary, [binary, f"-chdir={root / 'terraform'}", *sys.argv[1:]], env)

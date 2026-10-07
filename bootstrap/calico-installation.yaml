@@ -1,0 +1,20 @@
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  variant: Calico
+  calicoNetwork:
+    linuxDataplane: Iptables
+    bgp: Disabled
+    mtu: 1400
+    nodeAddressAutodetectionV4:
+      cidrs:
+        - 10.110.0.0/24
+    ipPools:
+      - name: lab-pods
+        cidr: 10.244.0.0/16
+        blockSize: 26
+        encapsulation: VXLAN
+        natOutgoing: Enabled
+        nodeSelector: all()
